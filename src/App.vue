@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import img from './assets/bukti.png'
+
 export default {
   name: 'App',
   data(){
@@ -21,114 +23,67 @@ export default {
               }]
       })
       .then(device => {
-        if (device.gatt.connected) {
-          device.gatt.disconnect()
+        console.log('> Found ' + device.name);
+        console.log('Connecting to GATT Server...',device);
+        return device.gatt.connect();
+      })
+      .then(server => server.getPrimaryService("000018f0-0000-1000-8000-00805f9b34fb"))
+      .then(service => service.getCharacteristic("00002af1-0000-1000-8000-00805f9b34fb"))
+      .then(characteristic => {
+        console.log('Characteristic', characteristic);
+        // Cache the characteristic
+        this.printCharacteristic = characteristic;
+        // this.sendTextData()
+        // comment code di bawah ini jika ingin menggunakan this.sendTextData
+        var maxChunk = 300;
+        var j = 0;
+        if ( this.zpl.length > maxChunk ) {
+          for ( var i = 0; i < this.zpl.length; i += maxChunk ) {
+            var subStr;
+            if ( i + maxChunk <= this.zpl.length ) {
+              subStr = this.zpl.substring(i, i + maxChunk);
+            } else {
+              subStr = this.zpl.substring(i, this.zpl.length);
+            }
+            setTimeout(this.writeStrToCharacteristic, 250 * j, subStr);
+            j++;
+          }
+        } else {
+          this.writeStrToCharacteristic(this.zpl);
         }
-
-        return this.connect(device)
       })
       .catch(error => { console.error(error); });
     },
-    connect (device) {
-      const self = this
-      device.addEventListener('gattserverdisconnected', this.onDisconnected)
-      return device.gatt
-        .connect()
-        .then(server =>
-          server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
-        )
-        .then(service =>
-          service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
-        )
-        .then(characteristic => {
-          self.printCharacteristic = characteristic
-          self.sendTextData(device)
-        })
-        .catch(error => {
-          this.handleError(error, device)
-        })
-    },
-    handleError (error, device) {
-      console.error('handleError => error', error)
-      if (device != null) {
-        device.gatt.disconnect()
-      }
-      let erro = JSON.stringify({
-        code: error.code,
-        message: error.message,
-        name: error.name
+    sendPrinterData() {
+          // Print an image followed by the text
+      this.writeStrToCharacteristic('Halo Bagus')
+      .then(result => {
+        console.log('PRINT SUCCESS', result)
       })
-
-      console.log('handleError => erro', erro)
-      if (error.code !== 8) {
-        alert('Could not connect with the printer. Try it again')
-      }
+      .catch(this.handleError);
     },
-    getBytes (text) {
-      console.log('text', text)
-      let br = '\u000A\u000D'
-      text = text === undefined ? br : text
-      let replaced = this.$languages.replace(text)
-      console.log('replaced', replaced)
-      let bytes = new TextEncoder('utf-8').encode(replaced + br)
-      console.log('bytes', bytes)
-      return bytes
+    handleError(error) {
+      console.log(error);
+      this.printCharacteristic = null;
     },
-    addText (arrayText) {
-      let text = this.zpl
-      arrayText.push(text)
-      if (this.userAgentType) {
-        while (text.length >= 20) {
-          let text2 = text.substring(20)
-          arrayText.push(text2)
-          text = text2
-        }
-      }
-    },
-    sendTextData (device) {
-      let arrayText = []
-      this.addText(arrayText)
-      console.log('sendTextData => arrayText', arrayText)
-      this.loop(0, arrayText, device)
-    },
-    loop (i, arrayText, device) {
-      let arrayBytes = this.getBytes(arrayText[i])
-      this.write(device, arrayBytes, () => {
-        i++
-        if (i < arrayText.length) {
-          this.loop(i, arrayText, device)
-        } else {
-          let arrayBytes = this.getBytes()
-          this.write(device, arrayBytes, () => {
-            device.gatt.disconnect()
-          })
-        }
-      })
-    },
-    write (device, array, callback) {
-      this.printCharacteristic
-        .writeValue(array)
-        .then(() => {
-          console.log('Printed Array: ' + array.length)
-          setTimeout(() => {
-            if (callback) {
-              callback()
-            }
-          }, 250)
-        })
-        .catch(error => {
-          this.handleError(error, device)
-        })
+    sendTextData() {
+      // Get the bytes for the text
+      let encoder = new TextEncoder("utf-8");
+      // Add line feed + carriage return chars to text
+      let text = encoder.encode('Halo' + '\u000A\u000D');
+      console.log('text',text)
+      return this.printCharacteristic.writeValueWithoutResponse(text).then(() => {
+        console.log('Write done.');
+      });
     },
     writeStrToCharacteristic (str) {
       let buffer = new ArrayBuffer(str.length);
       let dataView = new DataView(buffer);
-
       for (var i = 0; i <str.length; i++) {
         dataView.setUint8( i, str.charAt(i).charCodeAt() );
       }
-
-      return this.printCharacteristic.writeValue(buffer);
+      console.log('accessing the device');
+      return this.printCharacteristic.writeValue(img);
     }
   }
 }
