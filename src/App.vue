@@ -25,40 +25,68 @@ export default {
               }]
       })
       .then(device => {
-        console.log('> Found ' + device.name);
-        console.log('Connecting to GATT Server...',device);
-        return device.gatt.connect();
-      })
-      .then(server => server.getPrimaryService("000018f0-0000-1000-8000-00805f9b34fb"))
-      .then(service => service.getCharacteristic("00002af1-0000-1000-8000-00805f9b34fb"))
-      .then(characteristic => {
-        console.log('Characteristic', characteristic);
-        // Cache the characteristic
-        this.printCharacteristic = characteristic;
-        // this.sendTextData()
-
-        // comment code di bawah ini jika ingin menggunakan this.sendTextData
-        var maxChunk = 300;
-        var j = 0;
-
-        if ( this.zpl.length > maxChunk ) {
-          for ( var i = 0; i < this.zpl.length; i += maxChunk ) {
-            var subStr;
-            if ( i + maxChunk <= this.zpl.length ) {
-              subStr = this.zpl.substring(i, i + maxChunk);
-
-            } else {
-              subStr = this.zpl.substring(i, this.zpl.length);
-            }
-
-            setTimeout(this.writeStrToCharacteristic, 250 * j, subStr);
-            j++;
-          }
-        } else {
-          this.writeStrToCharacteristic(this.zpl);
+        if (device.gatt.connected) {
+          device.gatt.disconnect()
         }
+
+        return this.connect(device);
       })
-      .catch(error => { console.error(error); });
+      .catch(error => { 
+        this.handleError(error) 
+      });
+    },
+    connect (device) {
+      const self = this
+      return device.gatt
+        .connect()
+        .then(server =>
+          server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
+        )
+        .then(service =>
+          service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
+        )
+        .then(characteristic => {
+          console.log('characteristic', characteristic)
+          self.printCharacteristic = characteristic
+          var maxChunk = 300;
+          var j = 0;
+
+          if ( this.zpl.length > maxChunk ) {
+            for ( var i = 0; i < this.zpl.length; i += maxChunk ) {
+              var subStr;
+              if ( i + maxChunk <= this.zpl.length ) {
+                subStr = this.zpl.substring(i, i + maxChunk);
+
+              } else {
+                subStr = this.zpl.substring(i, this.zpl.length);
+              }
+
+              setTimeout(this.writeStrToCharacteristic, 250 * j, subStr);
+              j++;
+            }
+          } else {
+            this.writeStrToCharacteristic(this.zpl);
+          }
+        })
+        .catch(error => {
+          this.handleError(error, device)
+        })
+    },
+    handleError (error, device) {
+      console.error('handleError => error', error)
+      if (device != null) {
+        device.gatt.disconnect()
+      }
+      let erro = JSON.stringify({
+        code: error.code,
+        message: error.message,
+        name: error.name
+      })
+
+      console.log('handleError => erro', erro)
+      if (error.code !== 8) {
+        alert('Could not connect with the printer. Try it again')
+      }
     },
     sendPrinterData() {
           // Print an image followed by the text
@@ -67,10 +95,6 @@ export default {
         console.log('PRINT SUCCESS', result)
       })
       .catch(this.handleError);
-    },
-    handleError(error) {
-      console.log(error);
-      this.printCharacteristic = null;
     },
     sendTextData() {
       // Get the bytes for the text
