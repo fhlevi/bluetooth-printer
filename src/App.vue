@@ -41,25 +41,8 @@ export default {
           service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
         )
         .then(characteristic => {
-          console.log('characteristic', characteristic)
           self.printCharacteristic = characteristic
-          var maxChunk = 300;
-          var j = 0;
-          if ( this.zpl.length > maxChunk ) {
-            for ( var i = 0; i < this.zpl.length; i += maxChunk ) {
-              var subStr;
-              if ( i + maxChunk <= this.zpl.length ) {
-                subStr = this.zpl.substring(i, i + maxChunk);
-              } else {
-                subStr = this.zpl.substring(i, this.zpl.length);
-              }
-              setTimeout(this.writeStrToCharacteristic, 250 * j, subStr);
-              j++;
-            }
-          } else {
-            this.writeStrToCharacteristic(this.zpl);
-          }
-          device.gatt.disconnect()
+          self.sendTextData(device)
         })
         .catch(error => {
           this.handleError(error, device)
@@ -80,6 +63,16 @@ export default {
       if (error.code !== 8) {
         alert('Could not connect with the printer. Try it again')
       }
+    },
+    getBytes (text) {
+      console.log('text', text)
+      let br = '\u000A\u000D'
+      text = text === undefined ? br : text
+      let replaced = this.$languages.replace(text)
+      console.log('replaced', replaced)
+      let bytes = new TextEncoder('utf-8').encode(replaced + br)
+      console.log('bytes', bytes)
+      return bytes
     },
     addText (arrayText) {
       let text = this.zpl
