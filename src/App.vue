@@ -1,12 +1,16 @@
 <template>
   <div id="app">
     <button @click="connectBluetooth">Haloooo</button>
+    <hello-world></hello-world>
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
+  components: {
+    'hello-world': () => import('./components/HelloWorld.vue')
+  },
   data(){
     return {
       printCharacteristic : null,
