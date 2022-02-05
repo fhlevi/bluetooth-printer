@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue';
-import './config/import-quasar.js'
+// import './config/import-quasar.js'
 
 Vue.config.productionTip = false
 
