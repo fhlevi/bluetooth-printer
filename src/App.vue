@@ -18,7 +18,7 @@ export default {
     return {
       msg: 'dsadsad',
       printCharacteristic: null,
-      // isMobile: this.$q.platform.is.mobile
+      isMobile: this.$q.platform.is.mobile
     }
   },
   computed: {
@@ -97,7 +97,7 @@ export default {
 
       console.log('handleError => erro', erro)
       if (error.code !== 8) {
-        // this.$q.notify('Could not connect with the printer. Try it again')
+        this.$q.notify('Could not connect with the printer. Try it again')
       }
     },
     getBytes (text) {
@@ -113,7 +113,7 @@ export default {
     addText (arrayText) {
       let text = this.msg
       arrayText.push(text)
-      if (this.userAgentType) {
+      if (this.isMobile) {
         while (text.length >= 20) {
           let text2 = text.substring(20)
           arrayText.push(text2)
