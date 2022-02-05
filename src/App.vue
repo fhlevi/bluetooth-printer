@@ -1,16 +1,12 @@
 <template>
   <div id="app">
     <button @click="connectBluetooth">Haloooo</button>
-    <hello-world></hello-world>
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
-  components: {
-    'hello-world': () => import('./components/HelloWorld.vue')
-  },
   data(){
     return {
       printCharacteristic : null,
@@ -25,34 +21,45 @@ export default {
               }]
       })
       .then(device => {
+
         if (device.gatt.connected) {
-          device.gatt.disconnect()
+            device.gatt.disconnect()
+          }
+          
+        return device.gatt.connect();
+      })
+      .then(server => server.getPrimaryService("000018f0-0000-1000-8000-00805f9b34fb"))
+      .then(service => service.getCharacteristic("00002af1-0000-1000-8000-00805f9b34fb"))
+      .then(characteristic => {
+        console.log('Characteristic', characteristic);
+        // Cache the characteristic
+        this.printCharacteristic = characteristic;
+        // this.sendTextData()
+
+        // comment code di bawah ini jika ingin menggunakan this.sendTextData
+        var maxChunk = 300;
+        var j = 0;
+
+        if ( this.zpl.length > maxChunk ) {
+          for ( var i = 0; i < this.zpl.length; i += maxChunk ) {
+            var subStr;
+            if ( i + maxChunk <= this.zpl.length ) {
+              subStr = this.zpl.substring(i, i + maxChunk);
+
+            } else {
+              subStr = this.zpl.substring(i, this.zpl.length);
+            }
+
+            setTimeout(this.writeStrToCharacteristic, 250 * j, subStr);
+            j++;
+          }
+        } else {
+          this.writeStrToCharacteristic(this.zpl);
         }
 
-        return this.connect(device);
+
       })
-      .catch(error => { 
-        this.handleError(error) 
-      });
-    },
-    connect (device) {
-      const self = this
-      return device.gatt
-        .connect()
-        .then(server =>
-          server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb')
-        )
-        .then(service =>
-          service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
-        )
-        .then(characteristic => {
-          console.log('characteristic', characteristic)
-          self.printCharacteristic = characteristic
-          self.sendTextData(device)
-        })
-        .catch(error => {
-          this.handleError(error, device)
-        })
+      .catch(error => { console.error(error); });
     },
     handleError (error, device) {
       console.error('handleError => error', error)
