@@ -85,7 +85,7 @@ export default {
     writeStrToCharacteristic (str) {
       let buffer = new ArrayBuffer(str.length);
       let dataView = new DataView(buffer);
-      for (var i = 0; i <str.length; i++) {
+      for (var i = 0; i < str.length; i++) {
         dataView.setUint8( i, str.charAt(i).charCodeAt() );
       }
       console.log('accessing the device');
