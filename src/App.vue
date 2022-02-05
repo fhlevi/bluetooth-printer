@@ -21,6 +21,23 @@ export default {
       // isMobile: this.$q.platform.is.mobile
     }
   },
+  computed: {
+    userAgentType(){
+        const matchType = [
+            /Android/i,
+            /webOS/i,
+            /iPhone/i,
+            /iPad/i,
+            /iPod/i,
+            /BlackBerry/i,
+            /Windows Phone/i
+        ]
+
+        return matchType.some((matchItem) => {
+            return navigator.userAgent.match(matchItem)
+        })
+    },
+  },
   methods: {
     print () {
       navigator.bluetooth
@@ -96,13 +113,13 @@ export default {
     addText (arrayText) {
       let text = this.msg
       arrayText.push(text)
-      // if (this.isMobile) {
-      //   while (text.length >= 20) {
-      //     let text2 = text.substring(20)
-      //     arrayText.push(text2)
-      //     text = text2
-      //   }
-      // }
+      if (this.userAgentType) {
+        while (text.length >= 20) {
+          let text2 = text.substring(20)
+          arrayText.push(text2)
+          text = text2
+        }
+      }
     },
     sendTextData (device) {
       let arrayText = []
