@@ -48,25 +48,7 @@ export default {
         .then(characteristic => {
           console.log('characteristic', characteristic)
           self.printCharacteristic = characteristic
-          var maxChunk = 300;
-          var j = 0;
-
-          if ( this.zpl.length > maxChunk ) {
-            for ( var i = 0; i < this.zpl.length; i += maxChunk ) {
-              var subStr;
-              if ( i + maxChunk <= this.zpl.length ) {
-                subStr = this.zpl.substring(i, i + maxChunk);
-
-              } else {
-                subStr = this.zpl.substring(i, this.zpl.length);
-              }
-
-              setTimeout(this.writeStrToCharacteristic, 250 * j, subStr);
-              j++;
-            }
-          } else {
-            this.writeStrToCharacteristic(this.zpl);
-          }
+          self.sendTextData(device)
         })
         .catch(error => {
           this.handleError(error, device)
@@ -88,32 +70,51 @@ export default {
         alert('Could not connect with the printer. Try it again')
       }
     },
-    sendPrinterData() {
-          // Print an image followed by the text
-      this.writeStrToCharacteristic('Halo Bagus')
-      .then(result => {
-        console.log('PRINT SUCCESS', result)
-      })
-      .catch(this.handleError);
-    },
-    sendTextData() {
-      // Get the bytes for the text
-      let encoder = new TextEncoder("utf-8");
-      // Add line feed + carriage return chars to text
-      let text = encoder.encode('Halo' + '\u000A\u000D');
-      console.log('text',text)
-      return this.printCharacteristic.writeValueWithoutResponse(text).then(() => {
-        console.log('Write done.');
-      });
-    },
-    writeStrToCharacteristic (str) {
-      let buffer = new ArrayBuffer(str.length);
-      let dataView = new DataView(buffer);
-      for (var i = 0; i < str.length; i++) {
-        dataView.setUint8( i, str.charAt(i).charCodeAt() );
+    addText (arrayText) {
+      let text = this.zpl
+      arrayText.push(text)
+      if (this.userAgentType) {
+        while (text.length >= 20) {
+          let text2 = text.substring(20)
+          arrayText.push(text2)
+          text = text2
+        }
       }
-      console.log('accessing the device');
-      return this.printCharacteristic.writeValue(buffer);
+    },
+    sendTextData (device) {
+      let arrayText = []
+      this.addText(arrayText)
+      console.log('sendTextData => arrayText', arrayText)
+      this.loop(0, arrayText, device)
+    },
+    loop (i, arrayText, device) {
+      let arrayBytes = this.getBytes(arrayText[i])
+      this.write(device, arrayBytes, () => {
+        i++
+        if (i < arrayText.length) {
+          this.loop(i, arrayText, device)
+        } else {
+          let arrayBytes = this.getBytes()
+          this.write(device, arrayBytes, () => {
+            device.gatt.disconnect()
+          })
+        }
+      })
+    },
+    write (device, array, callback) {
+      this.printCharacteristic
+        .writeValue(array)
+        .then(() => {
+          console.log('Printed Array: ' + array.length)
+          setTimeout(() => {
+            if (callback) {
+              callback()
+            }
+          }, 250)
+        })
+        .catch(error => {
+          this.handleError(error, device)
+        })
     }
   }
 }
