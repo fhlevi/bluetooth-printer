@@ -5,8 +5,6 @@
 </template>
 
 <script>
-import img from './assets/bukti.png'
-
 export default {
   name: 'App',
   data(){
@@ -83,7 +81,7 @@ export default {
         dataView.setUint8( i, str.charAt(i).charCodeAt() );
       }
       console.log('accessing the device');
-      return this.printCharacteristic.writeValue(img);
+      return this.printCharacteristic.writeValue(buffer);
     }
   }
 }
