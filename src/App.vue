@@ -102,7 +102,7 @@ export default {
       console.log('text', text)
       let br = '\u000A\u000D'
       text = text === undefined ? br : text
-      let replaced = this.$languages.replace(text)
+      let replaced = this.$replace(text)
       console.log('replaced', replaced)
       let bytes = new TextEncoder('utf-8').encode(replaced + br)
       console.log('bytes', bytes)

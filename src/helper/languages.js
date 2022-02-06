@@ -837,4 +837,6 @@ function replace (text) {
   return text.replace(/[^A-Za-z0-9[\] ]/g, function (a) { return chars[a] || a })
 }
 
-export default replace;
+export {
+  replace
+};
