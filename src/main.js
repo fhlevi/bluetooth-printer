@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue';
-// import './config/import-quasar.js'
+import './helper/languages';
 
 Vue.config.productionTip = false
 
