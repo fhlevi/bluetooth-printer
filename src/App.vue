@@ -45,7 +45,6 @@ export default {
           {
             filters: [
               {
-                name: 'BlueTooth Printer',
                 services: ['000018f0-0000-1000-8000-00805f9b34fb']
               }
             ]
