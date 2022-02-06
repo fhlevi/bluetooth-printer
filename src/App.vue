@@ -95,7 +95,7 @@ export default {
 
       console.log('handleError => erro', erro)
       if (error.code !== 8) {
-        alert('Could not connect with the printer. Try it again', error.code)
+        alert(erro)
       }
     },
     getBytes (text) {
