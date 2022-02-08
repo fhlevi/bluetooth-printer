@@ -28,19 +28,20 @@ let chromePrint = {
     },
     methods: {
         async print () {
-          console.log(navigator.bluetooth.getDevices)
           navigator.bluetooth
             .requestDevice(
               {
                 filters: [
                   {
-                    services: ['000018f0-0000-1000-8000-00805f9b34fb']
+                    services: ['000018f0-0000-1000-8000-00805f9b34fb'],
+                    connectable: true
                   }
-                ]
+                ],
+                keepRepeatedDevices: true
               },
               {
                 optionalServices: ['00002af1-0000-1000-8000-00805f9b34fb']
-              }
+              },
             )
             .then(device => {
               // if (device.gatt.connected) {
