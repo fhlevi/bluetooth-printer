@@ -28,7 +28,7 @@ let chromePrint = {
           const deviceData = await navigator.bluetooth.getDevices()
           console.log(deviceData)
           
-          if(!deviceData.length || !Object.keys(deviceData).length) {
+          if(!deviceData.length) {
             navigator.bluetooth
               .requestDevice(
                 {
@@ -52,7 +52,7 @@ let chromePrint = {
               })
               .catch(this.handleError)
           } else {
-            const { gatt } = deviceData.BluetoothDevice
+            const { gatt } = deviceData[0].BluetoothDevice
 
             gatt.connected && this.sendTextData(deviceData.BluetoothDevice)
           }
