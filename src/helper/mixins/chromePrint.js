@@ -25,6 +25,8 @@ let chromePrint = {
     },
     methods: {
         async print () {
+          const deviceData = await navigator.bluetooth.getDevices()
+          alert(deviceData)
           navigator.bluetooth
             .requestDevice(
               {
