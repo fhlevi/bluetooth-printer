@@ -52,7 +52,7 @@ let chromePrint = {
               })
               .catch(this.handleError)
           } else {
-            deviceData[0].gatt.connected && this.sendTextData(deviceData[0])
+            this.connect(deviceData[0])
           }
         },
         connect (device) {
@@ -68,7 +68,7 @@ let chromePrint = {
             )
             .then(characteristic => {
               self.printCharacteristic = characteristic
-              // self.sendTextData(device)
+              self.sendTextData(device)
             })
             .catch(error => {
               this.handleError(error, device)
