@@ -46,7 +46,7 @@ let chromePrint = {
                 // if (device.gatt.connected) {
                 //   device.gatt.disconnect()
                 // }
-                localStorage.setItem('__device__', JSON.stringify(device[0]))
+                localStorage.setItem('__device__', JSON.stringify(device.gatt))
                 
                 return this.connect(device)
               })
