@@ -3,7 +3,6 @@ let chromePrint = {
         return {
             msg: `Nama Toko`,
             printCharacteristic: null,
-            deviceData: {}
             // isMobile: this.$q.platform.is.mobile
         }
     },
@@ -26,8 +25,9 @@ let chromePrint = {
     },
     methods: {
         async print () {
-          console.log(this.deviceData)
-          if(!Object.keys(this.deviceData).length) {
+          const deviceData = await navigator.bluetooth.getDevices() || [...JSON.parse(localStorage.getItem('__device__'))]
+          
+          if(!deviceData.length) {
             navigator.bluetooth
               .requestDevice(
                 {
@@ -43,13 +43,16 @@ let chromePrint = {
                 },
               )
               .then(device => {
-                this.deviceData = device
+                // if (device.gatt.connected) {
+                //   device.gatt.disconnect()
+                // }
+                localStorage.setItem('__device__', JSON.stringify(device))
                 
-                return this.connect(this.deviceData)
+                return this.connect(device)
               })
               .catch(this.handleError)
           } else {
-            this.sendTextData(this.deviceData)
+            deviceData[0].gatt.connected && this.sendTextData(deviceData[0])
           }
         },
         connect (device) {
