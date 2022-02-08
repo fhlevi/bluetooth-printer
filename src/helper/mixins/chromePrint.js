@@ -1,10 +1,7 @@
 let chromePrint = {
     data() {
         return {
-            msg: `
-            Nama Toko                               Toko Levi
-            195220106105248412    06 Januari 2022 - 10:54 WIB
-            `,
+            msg: `Nama Toko`,
             printCharacteristic: null,
             // isMobile: this.$q.platform.is.mobile
         }
@@ -36,8 +33,7 @@ let chromePrint = {
                     services: ['000018f0-0000-1000-8000-00805f9b34fb'],
                     connectable: true
                   }
-                ],
-                keepRepeatedDevices: true
+                ]
               },
               {
                 optionalServices: ['00002af1-0000-1000-8000-00805f9b34fb']
