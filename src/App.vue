@@ -12,8 +12,10 @@
 </style>
 
 <script>
+import thermalPrinter from './helper/mixins/thermalPrinter';
 export default {
   name: 'PageIndex',
+  mixins: [thermalPrinter],
   data () {
     return {
       msg: 'dsadsad',
@@ -51,13 +53,10 @@ export default {
           }
         )
         .then(device => {
-          console.log('device', device)
-
-          if (device.gatt.connected) {
-            device.gatt.disconnect()
-          }
+          // if (device.gatt.connected) {
+          //   device.gatt.disconnect()
+          // }
           
-          console.log('connect')
           return this.connect(device)
         })
         .catch(this.handleError)
@@ -74,7 +73,6 @@ export default {
           service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb')
         )
         .then(characteristic => {
-          console.log('characteristic', characteristic)
           self.printCharacteristic = characteristic
           self.sendTextData(device)
         })
@@ -84,8 +82,9 @@ export default {
     },
     handleError (error, device) {
       console.error('handleError => error', error)
+
       if (device != null) {
-        device.gatt.disconnect()
+        // device.gatt.disconnect()
       }
       let erro = JSON.stringify({
         code: error.code,
@@ -99,18 +98,18 @@ export default {
       }
     },
     getBytes (text) {
-      console.log('text', text)
       let br = '\u000A\u000D'
       text = text === undefined ? br : text
       let replaced = this.$replace(text)
-      console.log('replaced', replaced)
       let bytes = new TextEncoder('utf-8').encode(replaced + br)
-      console.log('bytes', bytes)
+      
       return bytes
     },
     addText (arrayText) {
       let text = this.msg
+      
       arrayText.push(text)
+
       if (this.userAgentType) {
         while (text.length >= 20) {
           let text2 = text.substring(20)
@@ -121,21 +120,28 @@ export default {
     },
     sendTextData (device) {
       let arrayText = []
+
       this.addText(arrayText)
-      console.log('sendTextData => arrayText', arrayText)
       this.loop(0, arrayText, device)
     },
     loop (i, arrayText, device) {
       let arrayBytes = this.getBytes(arrayText[i])
+
       this.write(device, arrayBytes, () => {
         i++
         if (i < arrayText.length) {
+          
           this.loop(i, arrayText, device)
+        
         } else {
+          
           let arrayBytes = this.getBytes()
+          
           this.write(device, arrayBytes, () => {
-            device.gatt.disconnect()
+            // device.gatt.disconnect()
+            console.log('connected')
           })
+        
         }
       })
     },
