@@ -52,8 +52,8 @@ let chromePrint = {
               })
               .catch(this.handleError)
           } else {
-            const device = deviceData[0]
-            console.log("🚀 ~ file: chromePrint.js ~ line 56 ~ print ~ device", device.BluetoothDevice)
+            const device = navigator.bluetooth.BluetoothDevice
+            console.log("🚀 ~ file: chromePrint.js ~ line 56 ~ print ~ device", device)
 
             // gatt.connected && this.sendTextData(device)
           }
