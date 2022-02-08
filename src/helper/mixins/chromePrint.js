@@ -26,6 +26,7 @@ let chromePrint = {
     },
     methods: {
         async print () {
+          console.log(this.deviceData)
           if(!Object.keys(this.deviceData).length) {
             navigator.bluetooth
               .requestDevice(
@@ -43,7 +44,6 @@ let chromePrint = {
               )
               .then(device => {
                 this.deviceData = device
-                console.log("🚀 ~ file: chromePrint.js ~ line 46 ~ print ~ this.deviceData", this.deviceData)
                 
                 return this.connect(this.deviceData)
               })
