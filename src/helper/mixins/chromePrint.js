@@ -27,28 +27,35 @@ let chromePrint = {
         async print () {
           const deviceData = await navigator.bluetooth.getDevices()
           console.log(deviceData)
-          navigator.bluetooth
-            .requestDevice(
-              {
-                filters: [
-                  {
-                    services: ['000018f0-0000-1000-8000-00805f9b34fb'],
-                    connectable: true
-                  }
-                ]
-              },
-              {
-                optionalServices: ['00002af1-0000-1000-8000-00805f9b34fb']
-              },
-            )
-            .then(device => {
-              // if (device.gatt.connected) {
-              //   device.gatt.disconnect()
-              // }
-              
-              return this.connect(device)
-            })
-            .catch(this.handleError)
+          
+          if(!deviceData.length || !Object.keys(deviceData).length) {
+            navigator.bluetooth
+              .requestDevice(
+                {
+                  filters: [
+                    {
+                      services: ['000018f0-0000-1000-8000-00805f9b34fb'],
+                      connectable: true
+                    }
+                  ]
+                },
+                {
+                  optionalServices: ['00002af1-0000-1000-8000-00805f9b34fb']
+                },
+              )
+              .then(device => {
+                // if (device.gatt.connected) {
+                //   device.gatt.disconnect()
+                // }
+                
+                return this.connect(device)
+              })
+              .catch(this.handleError)
+          } else {
+            const { gatt } = deviceData.BluetoothDevice
+
+            gatt.connected && this.sendTextData(deviceData.BluetoothDevice)
+          }
         },
         connect (device) {
           const self = this
